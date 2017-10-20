@@ -8,7 +8,7 @@
 
 
 int main() {
-    std::string level_name = "../level2/level2-1";
+    std::string level_name = "../level2/level2-4";
     std::string filename = level_name;
     std::string out_filename = level_name+"_out";
 
@@ -64,7 +64,7 @@ int main() {
 
     for (auto const &x : transactions) {
         if(Accounts[x.second->getSender()]->isValidID() && Accounts[x.second->getReceiver()]->isValidID() &&
-                (Accounts[x.second->getSender()]->getBalance()-x.second->getAmount()) >= Accounts[x.second->getSender()]->getOverdraft()) {
+                (Accounts[x.second->getSender()]->getBalance()-x.second->getAmount()) >= 0-Accounts[x.second->getSender()]->getOverdraft()) {
             Accounts[x.second->getSender()]->setBalance(
                     Accounts[x.second->getSender()]->getBalance() - x.second->getAmount());
             Accounts[x.second->getReceiver()]->setBalance(
@@ -75,7 +75,15 @@ int main() {
     std::ofstream outFile;
     outFile.open(out_filename+".txt");
 
-    outFile << count_account << endl;
+    int count_valid_accounts = 0;
+
+    for(int i = 0; i < count_account; i++){
+        if(Accounts[accountnames[i]]->isValidID()) {
+            count_valid_accounts++;
+        }
+    }
+
+    outFile << count_valid_accounts << endl;
 
     for(int i = 0; i < count_account; i++){
         if(Accounts[accountnames[i]]->isValidID()) {

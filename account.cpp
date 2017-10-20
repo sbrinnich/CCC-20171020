@@ -63,10 +63,19 @@ bool Account::isValidID() {
     }
 
     for(auto const &x : uppers){
-        if(lowers.find(x.first) == lowers.end()){
+        if(lowers.find(tolower(x.first)) == lowers.end()){
             return false;
         }
-        if(lowers[x.first] != x.second){
+        if(lowers[tolower(x.first)] != x.second){
+            return false;
+        }
+    }
+
+    for(auto const &x : lowers){
+        if(uppers.find(toupper(x.first)) == uppers.end()){
+            return false;
+        }
+        if(uppers[toupper(x.first)] != x.second){
             return false;
         }
     }
