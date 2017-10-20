@@ -4,8 +4,8 @@
 
 #include "account.h"
 
-Account::Account(std::string new_name, int new_balance, int overdraft, std::string accountid) :
-        name(new_name), balance(new_balance), overdraft(overdraft), accountid(accountid){
+Account::Account(std::string new_name, int new_balance, int overdr, std::string accid) :
+        name(new_name), balance(new_balance), overdraft(overdr), accountid(accid){
 }
 
 void Account::setBalance(int new_balance) {

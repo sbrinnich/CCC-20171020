@@ -18,7 +18,7 @@ private:
     int overdraft;
 
 public:
-    Account(std::string new_name, int new_balance, int overdraft, std::string accountid);
+    Account(std::string new_name, int new_balance, int overdr, std::string accid);
 
     void setBalance(int balance);
     std::string getName();

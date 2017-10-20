@@ -40,8 +40,8 @@ int main() {
         std::stringstream ss(input);
         ss >> overdraft;
         Account *A = new Account(accountname, balance, overdraft, accountid);
-        Accounts[accountname] = A;
-        accountnames[i] = accountname;
+        Accounts[accountid] = A;
+        accountnames[i] = accountid;
     }
 
     std::getline(inFile, input, '\n');
