@@ -8,10 +8,9 @@
 
 
 int main() {
-
-    std::string filename = "../level1/level1-4";
-    std::string out_filename = "../level1/level1-4_out";
-
+    std::string level_name = "../level1/level1-4";
+    std::string filename = level_name;
+    std::string out_filename = level_name+"_out";
 
     int count_account, count_transaction, balance, amount;
     std::unordered_map<std::string, Account*> Accounts;
@@ -29,6 +28,8 @@ int main() {
     count_account = 0;
     sstream >> count_account;
 
+    std::string accountnames[count_account];
+
     for (int i = 0; i < count_account; ++i) {
         std::getline(inFile, accountname, ' ');
         std::getline(inFile, input, '\n');
@@ -36,14 +37,15 @@ int main() {
         s >> balance;
         Account *A = new Account(accountname, balance);
         Accounts[accountname] = A;
+        accountnames[i] = accountname;
     }
 
     std::getline(inFile, input, '\n');
     std::stringstream s(input);
     count_transaction = 0;
-    sstream >> count_transaction;
+    s >> count_transaction;
 
-    for (int i = 0; i < count_account; ++i) {
+    for (int i = 0; i < count_transaction; ++i) {
         std::getline(inFile, sender, ' ');
         std::getline(inFile, receiver, ' ');
         std::getline(inFile, input, ' ');
@@ -64,9 +66,10 @@ int main() {
     std::ofstream outFile;
     outFile.open(out_filename+".txt");
 
+    outFile << count_account << endl;
 
-    for(auto const &x : Accounts){
-        outFile << x.first << " " << x.second->getBalance() <<endl;
+    for(int i = 0; i < count_account; i++){
+        outFile << Accounts[accountnames[i]]->getName() << " " << Accounts[accountnames[i]]->getBalance() << endl;
     }
 
     return 0;
