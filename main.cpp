@@ -8,18 +8,18 @@
 
 
 int main() {
-    std::string level_name = "../level1/level1-4";
+    std::string level_name = "../level2/level2-1";
     std::string filename = level_name;
     std::string out_filename = level_name+"_out";
 
-    int count_account, count_transaction, balance, amount;
+    int count_account, count_transaction, balance, amount, overdraft;
     std::unordered_map<std::string, Account*> Accounts;
     unsigned long long time_stamp;
     std::map<long, Transaction*> transactions;
 
 
     // Init variables and read input file
-    std::string input, accountname, sender, receiver;
+    std::string input, accountname, sender, receiver, accountid;
     std::ifstream inFile;
     inFile.open(filename+".txt");
 
@@ -32,10 +32,14 @@ int main() {
 
     for (int i = 0; i < count_account; ++i) {
         std::getline(inFile, accountname, ' ');
-        std::getline(inFile, input, '\n');
+        std::getline(inFile, accountid, ' ');
+        std::getline(inFile, input, ' ');
         std::stringstream s(input);
         s >> balance;
-        Account *A = new Account(accountname, balance);
+        std::getline(inFile, input, '\n');
+        std::stringstream ss(input);
+        ss >> overdraft;
+        Account *A = new Account(accountname, balance, overdraft, accountid);
         Accounts[accountname] = A;
         accountnames[i] = accountname;
     }
@@ -59,8 +63,13 @@ int main() {
     }
 
     for (auto const &x : transactions) {
-        Accounts[x.second->getSender()]->setBalance(Accounts[x.second->getSender()]->getBalance()-x.second->getAmount());
-        Accounts[x.second->getReceiver()]->setBalance(Accounts[x.second->getReceiver()]->getBalance()+x.second->getAmount());
+        if(Accounts[x.second->getSender()]->isValidID() && Accounts[x.second->getReceiver()]->isValidID() &&
+                (Accounts[x.second->getSender()]->getBalance()-x.second->getAmount()) >= Accounts[x.second->getSender()]->getOverdraft()) {
+            Accounts[x.second->getSender()]->setBalance(
+                    Accounts[x.second->getSender()]->getBalance() - x.second->getAmount());
+            Accounts[x.second->getReceiver()]->setBalance(
+                    Accounts[x.second->getReceiver()]->getBalance() + x.second->getAmount());
+        }
     }
 
     std::ofstream outFile;
@@ -69,7 +78,9 @@ int main() {
     outFile << count_account << endl;
 
     for(int i = 0; i < count_account; i++){
-        outFile << Accounts[accountnames[i]]->getName() << " " << Accounts[accountnames[i]]->getBalance() << endl;
+        if(Accounts[accountnames[i]]->isValidID()) {
+            outFile << Accounts[accountnames[i]]->getName() << " " << Accounts[accountnames[i]]->getBalance() << endl;
+        }
     }
 
     return 0;
