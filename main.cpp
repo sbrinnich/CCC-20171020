@@ -9,12 +9,13 @@
 
 int main() {
 
-    std::string filename = "../level1/level1-eg";
+    std::string filename = "../level1/level1-4";
+    std::string out_filename = "../level1/level1-4_out";
 
 
     int count_account, count_transaction, balance, amount;
     std::unordered_map<std::string, Account*> Accounts;
-    long time_stamp;
+    unsigned long long time_stamp;
     std::map<long, Transaction*> transactions;
 
 
@@ -60,8 +61,12 @@ int main() {
         Accounts[x.second->getReceiver()]->setBalance(Accounts[x.second->getReceiver()]->getBalance()+x.second->getAmount());
     }
 
+    std::ofstream outFile;
+    outFile.open(out_filename+".txt");
+
+
     for(auto const &x : Accounts){
-        cout << x.first << " " << x.second->getBalance() <<endl;
+        outFile << x.first << " " << x.second->getBalance() <<endl;
     }
 
     return 0;
