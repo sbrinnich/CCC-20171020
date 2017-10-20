@@ -4,16 +4,52 @@
 
 #include "Transaction.h"
 
-Transaction::Transaction(long create_time, std::string create_sender, std::string create_receiver, int create_amount) : time(create_time), sender(create_sender), receiver(create_receiver), amount(create_amount) {}
+Transaction::Transaction(std::string id, unsigned long long time, int num_inputs, int num_outputs) : id(id), time(time), num_inputs(num_inputs), num_outputs(num_outputs){
 
-string Transaction::getSender() {
-    return sender;
 }
 
-string Transaction::getReceiver() {
-    return receiver;
+std::string Transaction::getID() {
+    return id;
 }
 
-int Transaction::getAmount() {
-    return amount;
+void Transaction::addInput(InputElement* in) {
+    inputs[in->getOwner()] = in;
+}
+
+void Transaction::addOutput(OutputElement *out) {
+    outputs[out->getOwner()] = out;
+}
+
+InputElement* Transaction::getInput(std::string name) {
+    if(inputs.find(name) == inputs.end()){
+        return nullptr;
+    }
+    return inputs[name];
+}
+
+OutputElement* Transaction::getOutput(std::string name) {
+    if(outputs.find(name) == outputs.end()){
+        return nullptr;
+    }
+    return outputs[name];
+}
+
+int Transaction::getNumInputs() {
+    return num_inputs;
+}
+
+int Transaction::getNumOutputs() {
+    return num_outputs;
+}
+
+std::map<std::string, InputElement*> Transaction::getInputs() {
+    return inputs;
+}
+
+std::map<std::string, OutputElement*> Transaction::getOutputs() {
+    return outputs;
+}
+
+unsigned long long Transaction::getTime() {
+    return time;
 }

@@ -7,26 +7,34 @@
 
 #include <string.h>
 #include <iostream>
+#include <map>
+#include "InputElement.h"
+#include "OutputElement.h"
 
 
 using namespace std;
 
 class Transaction {
 private:
-    std::string sender, receiver;
-    int amount;
-    long time;
+    std::string id;
+    int num_inputs, num_outputs;
+    unsigned long long time;
+    std::map<std::string, InputElement*> inputs;
+    std::map<std::string, OutputElement*> outputs;
 
 public:
-    Transaction(long create_time, std::string create_sender, std::string create_receiver, int create_amount);
+    Transaction(std::string id, unsigned long long time, int num_inputs, int num_outputs);
+    void addInput(InputElement* in);
+    void addOutput(OutputElement* out);
 
-    string getSender();
-
-    string getReceiver();
-
-    int getAmount();
-
-
+    std::string getID();
+    unsigned long long getTime();
+    int getNumInputs();
+    int getNumOutputs();
+    std::map<std::string, InputElement*> getInputs();
+    std::map<std::string, OutputElement*> getOutputs();
+    InputElement* getInput(std::string name);
+    OutputElement* getOutput(std::string name);
 };
 
 

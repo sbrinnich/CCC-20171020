@@ -1,94 +1,130 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 #include "account.h"
 #include <map>
 #include <unordered_map>
+#include <vector>
 #include "Transaction.h"
 
 
 int main() {
-    std::string level_name = "../level2/level2-4";
+    std::string level_name = "../level3/level3-eg";
     std::string filename = level_name;
     std::string out_filename = level_name+"_out";
 
-    int count_account, count_transaction, balance, amount, overdraft;
-    std::unordered_map<std::string, Account*> Accounts;
+    int count_transaction, amount, num_inputs, num_outputs;
     unsigned long long time_stamp;
     std::map<long, Transaction*> transactions;
 
-
     // Init variables and read input file
-    std::string input, accountname, sender, receiver, accountid;
+    std::string input, transid, inputid, owner;
     std::ifstream inFile;
     inFile.open(filename+".txt");
 
     std::getline(inFile, input, '\n');
     std::stringstream sstream(input);
-    count_account = 0;
-    sstream >> count_account;
-
-    std::string accountnames[count_account];
-
-    for (int i = 0; i < count_account; ++i) {
-        std::getline(inFile, accountname, ' ');
-        std::getline(inFile, accountid, ' ');
-        std::getline(inFile, input, ' ');
-        std::stringstream s(input);
-        s >> balance;
-        std::getline(inFile, input, '\n');
-        std::stringstream ss(input);
-        ss >> overdraft;
-        Account *A = new Account(accountname, balance, overdraft, accountid);
-        Accounts[accountid] = A;
-        accountnames[i] = accountid;
-    }
-
-    std::getline(inFile, input, '\n');
-    std::stringstream s(input);
     count_transaction = 0;
-    s >> count_transaction;
+    sstream >> count_transaction;
 
     for (int i = 0; i < count_transaction; ++i) {
-        std::getline(inFile, sender, ' ');
-        std::getline(inFile, receiver, ' ');
+        std::getline(inFile, transid, ' ');
         std::getline(inFile, input, ' ');
         std::stringstream s(input);
-        s >> amount;
-        std::getline(inFile, input, '\n');
-        std::stringstream ss(input);
-        ss >> time_stamp;
-        Transaction *A = new Transaction(time_stamp, sender, receiver, amount);
-        transactions[time_stamp] = A;
-    }
+        s >> num_inputs;
+        std::vector<InputElement*> inputs;
+        for(int j = 0; j < num_inputs; j++){
+            std::getline(inFile, inputid, ' ');
+            std::getline(inFile, owner, ' ');
+            std::getline(inFile, input, ' ');
+            std::stringstream ss(input);
+            ss >> amount;
+            inputs.push_back(new InputElement(inputid, owner, amount));
+        }
 
-    for (auto const &x : transactions) {
-        if(Accounts[x.second->getSender()]->isValidID() && Accounts[x.second->getReceiver()]->isValidID() &&
-                (Accounts[x.second->getSender()]->getBalance()-x.second->getAmount()) >= 0-Accounts[x.second->getSender()]->getOverdraft()) {
-            Accounts[x.second->getSender()]->setBalance(
-                    Accounts[x.second->getSender()]->getBalance() - x.second->getAmount());
-            Accounts[x.second->getReceiver()]->setBalance(
-                    Accounts[x.second->getReceiver()]->getBalance() + x.second->getAmount());
+        std::stringstream sss(input);
+        sss >> num_outputs;
+        std::vector<OutputElement*> outputs;
+        for(int j = 0; j < num_outputs; j++){
+            std::getline(inFile, owner, ' ');
+            std::getline(inFile, input, ' ');
+            std::stringstream ss(input);
+            ss >> amount;
+            outputs.push_back(new OutputElement(owner, amount));
+        }
+
+        std::getline(inFile, input, '\n');
+        std::stringstream ssss(input);
+        ssss >> time_stamp;
+
+        bool valid_transaction = true;
+
+        int sum_in = 0, sum_out = 0;
+        std::vector<std::string> out_owners;
+
+        for(auto const &x : outputs){
+            if(x->getAmount() <= 0){
+                valid_transaction = false;
+            }
+            sum_out += x->getAmount();
+            if(std::find(out_owners.begin(), out_owners.end(), x->getOwner()) != out_owners.end()){
+                valid_transaction = false;
+            }else{
+                out_owners.push_back(x->getOwner());
+            }
+        }
+        for(auto const &x : inputs){
+            if(x->getAmount() <= 0){
+                valid_transaction = false;
+            }
+            sum_in += x->getAmount();
+        }
+
+        if(sum_in != sum_out){
+            valid_transaction = false;
+        }
+
+        for(auto const &x : inputs){
+            if(x->getOwner() != "origin") {
+                for (auto it = transactions.rbegin(); it != transactions.rend(); ++it) {
+                    if (x->getOwner() == it->second->getOutput(x->getOwner())->getOwner()) {
+                        if (x->getAmount() != it->second->getOutput(x->getOwner())->getAmount()) {
+                            valid_transaction = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        std::cout << "Testy: " << count_transaction << endl;
+        if(valid_transaction) {
+            transactions[time_stamp] = new Transaction(transid, time_stamp, num_inputs, num_outputs);
+            for (auto const &x : outputs) {
+                transactions[time_stamp]->addOutput(x);
+            }
+            for (auto const &x : inputs) {
+                transactions[time_stamp]->addInput(x);
+            }
         }
     }
 
     std::ofstream outFile;
     outFile.open(out_filename+".txt");
 
-    int count_valid_accounts = 0;
+    outFile << transactions.size() << std::endl;
 
-    for(int i = 0; i < count_account; i++){
-        if(Accounts[accountnames[i]]->isValidID()) {
-            count_valid_accounts++;
+    for (auto const &x : transactions) {
+        outFile << x.second->getID() << " " << x.second->getNumInputs() << " ";
+        for(auto const &z : x.second->getInputs()){
+            outFile << z.second->getInID() << " " << z.second->getOwner() << " " << z.second->getAmount() << " ";
         }
-    }
-
-    outFile << count_valid_accounts << endl;
-
-    for(int i = 0; i < count_account; i++){
-        if(Accounts[accountnames[i]]->isValidID()) {
-            outFile << Accounts[accountnames[i]]->getName() << " " << Accounts[accountnames[i]]->getBalance() << endl;
+        outFile << x.second->getNumOutputs() << " ";
+        for(auto const &z : x.second->getOutputs()){
+            outFile << z.second->getOwner() << " " << z.second->getAmount() << " ";
         }
+        outFile << x.first << std::endl;
     }
 
     return 0;
