@@ -43,6 +43,7 @@ int main() {
             inputs.push_back(new InputElement(inputid, owner, amount));
         }
 
+        std::getline(inFile, input, ' ');
         std::stringstream sss(input);
         sss >> num_outputs;
         std::vector<OutputElement*> outputs;
